@@ -81,3 +81,25 @@ FAR Planner settings are kept in default.yaml in the 'src/far_planner/config' fo
 ## Author
 
 [Fan Yang](https://github.com/MichaelFYang) (michael.yfan24@gmail.com)
+## Save and Load Map
+
+第一步：保存探索好的地图
+
+1. 正常运行 far_planner 进行探索建图。
+2. 同时，启动 graph_decoder 节点。
+   ```     ros2 run graph_decoder decoder_node ```
+3. 此时，graph_decoder 会通过 /robot_vgraph 话题接收 far_planner 构建的地图。
+4. 当你想保存地图时，向 /save_file_dir 话题发布一个消息，内容是你要保存的绝对路径和文件名。
+   ```     ros2 topic pub /save_file_dir std_msgs/msg/String "data: '/path/to/your/map.vgh'" --once```
+5. graph_decoder 节点就会将当前地图保存到该路径。
+
+第二步：加载地图并进行规划
+
+1. 首先，启动 graph_decoder 节点。
+2. 启动 farplanner，初始化成功之后
+2. 向 /read_file_dir 话题发布你之前保存的地图文件的路径。
+
+     ```ros2 topic pub /read_file_dir std_msgs/msg/String "data: '/path/to/your/map.vgh'" --once```
+3. graph_decoder 会立即读取该文件，并将地图发布到 /decoded_vgraph 话题。
+
+这样，far_planner 就可以在不进行探索的情况下，直接在预先构建好的地图上进行路径规划了。
